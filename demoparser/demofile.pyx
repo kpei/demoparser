@@ -49,7 +49,7 @@ cdef class DemoFile:
     cdef public unsigned int current_tick
     cdef list data_tables
     cdef list string_tables
-    cdef list server_classes
+    cdef public list server_classes
     cdef public object game_events
     cdef object pending_baselines
     cdef public object instance_baselines
