@@ -1,8 +1,5 @@
 ``csgo-demoparser`` is a library for parsing CS:GO demo files.  This is a forked verison of Ryan Moe's original demoparser, it has a few additional events that the user can subscribe to as well as some additional player properties.  This is being maintained as a library for automated demo parsing and analysis.
 
-As the file is processed events are emitted for which callbacks can
-be registered.
-
 Quick start
 -----------
 
