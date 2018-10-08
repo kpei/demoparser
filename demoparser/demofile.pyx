@@ -181,6 +181,10 @@ cdef class DemoFile:
         it is. The class ID is also used to find the correct
         instance baseline. Instance baselines serve as default
         values when entities are created.
+        
+        :emits: :ref:`removed_entity <event_removed_entity>`, \
+                :ref:`new_entity <event_new_entity>`, \
+                :ref:`updated_entity <event_updated_entity>`
         """
         cdef unsigned int i = 0
         cdef int entity_idx = -1
@@ -191,6 +195,7 @@ cdef class DemoFile:
 
             if buf.read_bit():
                 if buf.read_bit():
+                    self.emit('removed_entity', [self.entities[entity_idx]])
                     self.entities[entity_idx] = None
             elif buf.read_bit():
                 class_id = buf.read_uint_bits(self.server_class_bits)
@@ -202,9 +207,11 @@ cdef class DemoFile:
                     entity_idx, class_id, serial
                 )
                 self.read_new_entity(buf, new_entity)
+                self.emit('new_entity', [new_entity])
             else:
                 entity = self.entities[entity_idx]
                 self.read_new_entity(buf, entity)
+                self.emit('updated_entity', [entity])
 
     cpdef void read_new_entity(self, Bitbuffer buf, object entity):
         """Read entity data.
