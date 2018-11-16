@@ -216,7 +216,7 @@ cdef class Bitbuffer:
 
             index += 1
 
-        return array.array('b', ret).tobytes().decode('utf-8')
+        return array.array('b', ret).tobytes().decode('utf-8', 'ignore')
 
     cpdef float read_bit_normal(self):
         cdef bint sign_bit = self.read_bit()
