@@ -13,8 +13,8 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import demoparser.protobufs.steammessages_pb2 as steammessages__pb2
-import demoparser.protobufs.engine_gcmessages_pb2 as engine__gcmessages__pb2
+import steammessages_pb2 as steammessages__pb2
+import engine_gcmessages_pb2 as engine__gcmessages__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

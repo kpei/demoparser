@@ -9,6 +9,7 @@ cdef class Decoder:
     # Methods
     cpdef object decode(self)
     cpdef long decode_int(self)
+    cpdef long decode_int64(self)
     cpdef float decode_float(self)
     cpdef dict decode_vector(self)
     cpdef dict decode_vector_xy(self)

@@ -25,7 +25,6 @@ cdef class CommandError(Exception):
 cdef class ClassNotFoundError(Exception):
     pass
 
-
 cdef bint _key_sort(dict item):
     if item.get('collapsible', True) is False:
         return 0
@@ -212,8 +211,9 @@ cdef class DemoFile:
                 self.emit('new_entity', [new_entity])
             else:
                 entity = self.entities[entity_idx]
-                self.read_new_entity(buf, entity)
-                self.emit('updated_entity', [entity])
+                if entity is not None:
+                    self.read_new_entity(buf, entity)
+                    self.emit('updated_entity', [entity])
 
     cpdef void read_new_entity(self, Bitbuffer buf, object entity):
         """Read entity data.

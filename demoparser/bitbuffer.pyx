@@ -186,6 +186,14 @@ cdef class Bitbuffer:
             assert num >= 4096
 
         return num
+        
+    cpdef unsigned int read_signed_var_int(self):
+        """Read a variable length integer.
+
+        :returns: unsigned int
+        """
+        cdef unsigned int num = self.read_var_int()
+        return <unsigned int>((num >> 1) ^ -(num & 1))
 
     cpdef str read_string(self, int length=-1):
         r"""Read a string.

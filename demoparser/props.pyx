@@ -83,9 +83,9 @@ cdef class Decoder:
         cdef int num_bits = self.prop.num_bits
         cdef float high_value = self.prop.high_value
         cdef float low_value = self.prop.low_value
-
+        
         interp = self.buf.read_uint_bits(num_bits)
-        val = interp / ((1 << num_bits) - 1)
+        val = <float>interp / ((1 << num_bits) - 1)
         val = low_value + (high_value - low_value) * val
 
         return val
@@ -152,12 +152,41 @@ cdef class Decoder:
         string = self.buf.read_string(length)
         return string
 
-    def decode_int64(self):
+    cpdef long decode_int64(self):
         """Decode a 64-bit integer.
 
         CS:GO demos don't appear to contain 64-bit ints.
+        
+        Dec 6th, it does now :^)
+        TODO:
+        TEST IF IT WORKS
         """
-        assert False, 'int64'
+        cdef int num_bits = self.prop.num_bits
+        cdef long ret
+        cdef bint is_negative = 0
+        cdef unsigned int low = 0
+        cdef unsigned int high = 0
+        
+        if self.flags & PropFlags.SPROP_VARINT:
+            if self.flags & PropFlags.SPROP_UNSIGNED != 0:
+                ret = self.buf.read_var_int()
+            else:
+                ret = self.buf.read_signed_var_int()
+        else:
+            if self.flags & PropFlags.SPROP_UNSIGNED != 0:
+                low = self.buf.read_uint_bits(32)
+                high = self.buf.read_uint_bits(num_bits - 32)
+            else:
+                is_negative = self.buf.read_bit()
+                low = self.buf.read_uint_bits(32)
+                high = self.buf.read_uint_bits(num_bits - 32 - 1)
+            
+            ret = (<long>high << 32) | low
+            
+            if is_negative:
+                ret = -ret
+                
+        return ret
 
     cpdef list decode_array(self):
         """Decode array.
