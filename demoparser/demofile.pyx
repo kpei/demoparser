@@ -21,7 +21,6 @@ from demoparser.util cimport parse_entity_update
 cdef class CommandError(Exception):
     pass
 
-
 cdef class ClassNotFoundError(Exception):
     pass
 
@@ -29,7 +28,6 @@ cdef bint _key_sort(dict item):
     if item.get('collapsible', True) is False:
         return 0
     return 1
-
 
 cdef enum DemoCommand:
     SIGNON = 1
@@ -192,12 +190,13 @@ cdef class DemoFile:
         cdef Bitbuffer buf = Bitbuffer(msg.entity_data)
 
         for i in range(msg.updated_entries):
-            entity_idx += 1 + buf.read_var_int()
+            entity_idx += 1 + buf.read_ubit_int()
+            assert ( entity_idx <= len(self.entities) and entity_idx >= 0 ), "Entity Idx (%s) is out of range" % entity_idx
 
             if buf.read_bit():
-                if buf.read_bit():
-                    self.emit('removed_entity', [self.entities[entity_idx]])
-                    self.entities[entity_idx] = None
+                self.emit('removed_entity', [self.entities[entity_idx]])
+                self.entities[entity_idx] = None
+                buf.read_bit() # force delete flag
             elif buf.read_bit():
                 class_id = buf.read_uint_bits(self.server_class_bits)
                 serial = buf.read_uint_bits(
@@ -211,9 +210,8 @@ cdef class DemoFile:
                 self.emit('new_entity', [new_entity])
             else:
                 entity = self.entities[entity_idx]
-                if entity is not None:
-                    self.read_new_entity(buf, entity)
-                    self.emit('updated_entity', [entity])
+                self.read_new_entity(buf, entity)
+                self.emit('updated_entity', [entity])
 
     cpdef void read_new_entity(self, Bitbuffer buf, object entity):
         """Read entity data.
@@ -326,7 +324,7 @@ cdef class DemoFile:
 
         table = self.string_tables[msg.table_id]
 
-        if table['name'] in ('userinfo', 'modelprecache', 'instancebaseline'):
+        if table['name'] in ('userinfo', 'instancebaseline'):
             self.parse_string_table_update(
                 buf, table, msg.num_changed_entries, len(table['entries']),
                 0, False

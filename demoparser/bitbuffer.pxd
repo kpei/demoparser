@@ -11,6 +11,7 @@ cdef class Bitbuffer:
     cpdef unsigned char read_bit(self)
     cpdef unsigned int read_uint_bits(self, unsigned int bits)
     cpdef int read_sint_bits(self, unsigned int bits)
+    cpdef unsigned int read_ubit_int(self)
     cpdef unsigned int read_var_int(self)
     cpdef unsigned int read_signed_var_int(self)
     cpdef str read_string(self, int length=*)

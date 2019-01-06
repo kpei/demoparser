@@ -167,8 +167,8 @@ cdef class Bitbuffer:
         cdef unsigned int mask = 2 << (bits - 2)
         return -(ret & mask) + (ret & ~mask)
 
-    cpdef unsigned int read_var_int(self):
-        """Read a variable length integer.
+    cpdef unsigned int read_ubit_int(self):
+        """Read an unsigned bit integer.
 
         :returns: unsigned int
         """
@@ -186,6 +186,24 @@ cdef class Bitbuffer:
             assert num >= 4096
 
         return num
+        
+    cpdef unsigned int read_var_int(self):
+        """Read an unsigned variable length integer.
+
+        :returns: unsigned int
+        """
+        cdef unsigned int tmp_byte = 0x80
+        cdef unsigned int ret = 0
+        cdef unsigned int count = 0
+        
+        while (tmp_byte & 0x80) != 0:
+            if count >= 5:
+                raise Exception('VarInt32 out of range')
+            tmp_byte = self.read_uint_bits(8)
+            ret |= (tmp_byte & 0x7F) << (7 * count)
+            count += 1
+        
+        return ret
         
     cpdef unsigned int read_signed_var_int(self):
         """Read a variable length integer.

@@ -12,7 +12,7 @@ class ProtobufBuilder(_build_py):
         subprocess.run([
             '/usr/local/bin/protoc',
             '--python_out=.',
-            #'--proto_path=/usr/include/',
+            '--proto_path=/usr/include/',
             '--proto_path=./demoparser/protobufs',
             *proto_files
         ], check=True)

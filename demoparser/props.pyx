@@ -2,7 +2,7 @@ from cython.operator cimport dereference
 from demoparser.bitbuffer cimport Bitbuffer
 from demoparser import consts
 
-from libc.math cimport ceil, log2, sqrt, NAN, isnan
+from libc.math cimport floor, log2, sqrt, NAN, isnan
 cimport cython
 
 
@@ -58,13 +58,19 @@ cdef class Decoder:
         cdef long ret
         cdef int num_bits = self.prop.num_bits
 
-        if self.flags & PropFlags.SPROP_UNSIGNED != 0:
-            if num_bits == 1:
-                ret = self.buf.read_bit()
+        if (self.flags & PropFlags.SPROP_VARINT) != 0:
+            if (self.flags & PropFlags.SPROP_UNSIGNED) != 0:
+                ret = self.buf.read_var_int()
             else:
-                ret = self.buf.read_uint_bits(num_bits)
+                ret = self.buf.read_signed_var_int()
         else:
-            ret = self.buf.read_sint_bits(num_bits)
+            if (self.flags & PropFlags.SPROP_UNSIGNED) != 0:
+                if num_bits == 1:
+                    ret = self.buf.read_bit()
+                else:
+                    ret = self.buf.read_uint_bits(num_bits)
+            else:
+                ret = self.buf.read_sint_bits(num_bits)
         return ret
 
     @cython.cdivision(True)
@@ -158,8 +164,7 @@ cdef class Decoder:
         CS:GO demos don't appear to contain 64-bit ints.
         
         Dec 6th, it does now :^)
-        TODO:
-        TEST IF IT WORKS
+        TODO: TEST IF IT WORKS
         """
         cdef int num_bits = self.prop.num_bits
         cdef long ret
@@ -167,13 +172,13 @@ cdef class Decoder:
         cdef unsigned int low = 0
         cdef unsigned int high = 0
         
-        if self.flags & PropFlags.SPROP_VARINT:
-            if self.flags & PropFlags.SPROP_UNSIGNED != 0:
+        if (self.flags & PropFlags.SPROP_VARINT) != 0:
+            if (self.flags & PropFlags.SPROP_UNSIGNED) != 0:
                 ret = self.buf.read_var_int()
             else:
                 ret = self.buf.read_signed_var_int()
         else:
-            if self.flags & PropFlags.SPROP_UNSIGNED != 0:
+            if (self.flags & PropFlags.SPROP_UNSIGNED) != 0:
                 low = self.buf.read_uint_bits(32)
                 high = self.buf.read_uint_bits(num_bits - 32)
             else:
@@ -197,7 +202,7 @@ cdef class Decoder:
         cdef unsigned int bits, idx, num_elements
 
         max_elements = self.prop.num_elements
-        bits = (<unsigned int>ceil(log2(max_elements))) + 1
+        bits = (<unsigned int>floor(log2(max_elements))) + 1
         num_elements = self.buf.read_uint_bits(bits)
 
         elements = []
