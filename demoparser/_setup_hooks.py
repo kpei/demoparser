@@ -8,12 +8,12 @@ class ProtobufBuilder(_build_py):
     command_name = 'build_py'
 
     def protoc(self):
-        proto_files = glob.glob('./demoparser/protobufs/*.proto')
+        proto_files = glob.glob('demoparser/protobufs/*.proto')
         subprocess.run([
-            '/usr/local/bin/protoc',
+            'protoc',
             '--python_out=.',
-            '--proto_path=/usr/include/',
-            '--proto_path=./demoparser/protobufs',
+            #'--proto_path=demoparser/protobufs/',
+            '--proto_path=.',
             *proto_files
         ], check=True)
 
